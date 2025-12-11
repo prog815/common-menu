@@ -39,10 +39,18 @@ class CommonProjectsMenu extends HTMLElement {
 
   // Проверка, является ли ссылка текущей страницей
   isCurrentPage(url) {
-    const currentUrl = this.getCleanUrl();
-    const targetUrl = url.replace(/\/$/, ''); // Удаляем trailing slash
-    return currentUrl === targetUrl || currentUrl + '/' === targetUrl;
-  }
+    // Сравниваем путь (pathname) - это самое надежное
+    const currentPath = window.location.pathname.replace(/\/$/, '');
+    const targetPath = new URL(url).pathname.replace(/\/$/, '');
+
+    console.log('CommonProjectsMenu: сравнение путей:', {
+        текущий_путь: currentPath,
+        целевой_путь: targetPath,
+        совпадают: currentPath === targetPath
+    });
+
+    return currentPath === targetPath;
+    }
 
   // Генерация стилей
   getStyles() {
@@ -262,6 +270,13 @@ class CommonProjectsMenu extends HTMLElement {
 
   // Рендеринг компонента
   render() {
+
+    console.log('=== CommonProjectsMenu: начат рендеринг ===');
+    console.log('Текущий URL:', window.location.href);
+    console.log('Текущий pathname:', window.location.pathname);
+    
+    const currentUrl = this.getCleanUrl();
+    
     this.shadowRoot.innerHTML = `
       ${this.getStyles()}
       ${this.getTemplate()}
