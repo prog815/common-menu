@@ -1,5 +1,5 @@
 // menu.js
-// Версия 1.0
+// Версия 1.1 с социальными иконками
 // Общий компонент навигационного меню для справочников
 // Подключается как: <script src="https://prog815.github.io/common-menu/menu.js"></script>
 // Использование: <common-projects-menu></common-projects-menu>
@@ -21,6 +21,17 @@ const projectsCatalog = [
   }
 ];
 
+// Социальные сети и контакты (горизонтальный ряд иконок)
+const socialLinks = [
+  {
+    name: 'Telegram-канал',
+    url: 'https://t.me/smart_tabs',
+    icon: '📢',
+    description: 'Новости проекта и обратная связь'
+  }
+  // Добавьте здесь другие соцсети при необходимости
+];
+
 // Основной класс компонента
 class CommonProjectsMenu extends HTMLElement {
   constructor() {
@@ -29,6 +40,7 @@ class CommonProjectsMenu extends HTMLElement {
   }
 
   connectedCallback() {
+    console.log('CommonProjectsMenu: компонент подключен, URL:', window.location.href);
     this.render();
   }
 
@@ -53,238 +65,551 @@ class CommonProjectsMenu extends HTMLElement {
     }
 
   // Генерация стилей
-  getStyles() {
+  // Метод getStyles() - должен возвращать строку со стилями
+    getStyles() {
     return `
-      <style>
+        <style>
         :host {
-          display: block;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-          font-size: 14px;
-          line-height: 1.5;
+            display: block;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
         }
 
         .common-menu {
-          background: #ffffff;
-          border: 1px solid #e1e4e8;
-          border-radius: 8px;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-          overflow: hidden;
+            background: #ffffff;
+            border: 1px solid #e1e4e8;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
         }
 
         .menu-header {
-          padding: 12px 16px;
-          background: #f6f8fa;
-          border-bottom: 1px solid #e1e4e8;
+            padding: 12px 16px;
+            background: #f6f8fa;
+            border-bottom: 1px solid #e1e4e8;
         }
 
         .menu-title {
-          font-weight: 600;
-          color: #24292e;
-          font-size: 15px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
+            font-weight: 600;
+            color: #24292e;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .menu-title::before {
-          content: '📚';
+            content: '📚';
         }
 
         .menu-list {
-          list-style: none;
-          padding: 0;
-          margin: 0;
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
 
         .menu-item {
-          display: flex;
-          align-items: center;
-          padding: 10px 16px;
-          text-decoration: none;
-          color: #24292e;
-          border-bottom: 1px solid #f0f0f0;
-          transition: background-color 0.15s ease;
-          position: relative;
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            text-decoration: none;
+            color: #24292e;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.15s ease;
+            position: relative;
         }
 
         .menu-item:last-child {
-          border-bottom: none;
+            border-bottom: none;
         }
 
         .menu-item:hover {
-          background-color: #f6f8fa;
+            background-color: #f6f8fa;
         }
 
         .menu-item.active {
-          background-color: #f0f7ff;
-          border-left: 3px solid #0969da;
+            background-color: #f0f7ff;
+            border-left: 3px solid #0969da;
         }
 
         .menu-item.active::before {
-          content: '→';
-          position: absolute;
-          left: 4px;
-          color: #0969da;
-          font-weight: bold;
+            content: '→';
+            position: absolute;
+            left: 4px;
+            color: #0969da;
+            font-weight: bold;
         }
 
         .menu-item.active .menu-text {
-          color: #0969da;
-          font-weight: 500;
+            color: #0969da;
+            font-weight: 500;
         }
 
         .menu-icon {
-          margin-right: 10px;
-          font-size: 16px;
-          width: 20px;
-          text-align: center;
+            margin-right: 10px;
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
         }
 
         .menu-text {
-          flex-grow: 1;
-        }
-
-        .menu-description {
-          display: none; /* Скрыто по умолчанию */
+            flex-grow: 1;
         }
 
         .menu-badge {
-          background: #d73a49;
-          color: white;
-          font-size: 11px;
-          padding: 2px 6px;
-          border-radius: 10px;
-          font-weight: 600;
-          margin-left: 8px;
-          white-space: nowrap;
+            background: #d73a49;
+            color: white;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 600;
+            margin-left: 8px;
+            white-space: nowrap;
         }
 
-        .menu-footer {
-          padding: 8px 16px;
-          background: #f6f8fa;
-          border-top: 1px solid #e1e4e8;
-          text-align: right;
+        /* Секция социальных сетей */
+        .social-section {
+            padding: 15px 16px 10px;
+            border-top: 1px solid #e1e4e8;
+            background: #fafbfc;
         }
 
-        .menu-version {
-          font-size: 11px;
-          color: #6a737d;
+        .social-label {
+            font-size: 12px;
+            color: #6a737d;
+            margin-bottom: 10px;
+            text-align: center;
         }
 
-        /* Стили для демо-страницы */
-        .demo-container {
-          max-width: 800px;
-          margin: 40px auto;
-          padding: 20px;
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
-        .demo-title {
-          font-size: 24px;
-          margin-bottom: 20px;
-          color: #24292e;
+        .social-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: white;
+            border: 1px solid #e1e4e8;
+            font-size: 18px;
+            text-decoration: none;
+            color: #24292e;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
         }
 
-        .demo-instructions {
-          background: #f6f8fa;
-          padding: 15px;
-          border-radius: 6px;
-          margin-bottom: 30px;
-          border-left: 4px solid #0969da;
+        .social-icon:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #0969da;
         }
 
-        .demo-instructions code {
-          background: #e1e4e8;
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-          font-size: 13px;
+        .social-icon:active {
+            transform: translateY(-1px);
         }
 
-        /* Адаптивные стили */
+        /* Специальные стили для Telegram */
+        .social-icon[title*="Telegram"] {
+            background: linear-gradient(135deg, #0088cc 0%, #0077b5 100%);
+            color: white;
+            border-color: #0088cc;
+        }
+
+        .social-icon[title*="Telegram"]:hover {
+            background: linear-gradient(135deg, #0077b5 0%, #0066a3 100%);
+            box-shadow: 0 4px 12px rgba(0, 136, 204, 0.3);
+        }
+
+        /* Индикатор нового окна для внешних ссылок */
+        .social-icon::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #0969da;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .social-icon:hover::after {
+            opacity: 1;
+        }
+
+        /* Адаптивность для мобильных */
         @media (max-width: 768px) {
-          .common-menu {
-            border-radius: 6px;
-          }
-          
-          .menu-item {
-            padding: 12px 16px;
-          }
-          
-          .menu-item.active::before {
-            left: 2px;
-          }
+            .social-icon {
+            width: 44px;
+            height: 44px;
+            font-size: 20px;
+            }
+            
+            .social-icons {
+            gap: 20px;
+            }
+            
+            .social-section {
+            padding: 20px 16px 15px;
+            }
         }
 
         @media (max-width: 480px) {
-          .menu-header {
+            .social-icons {
+            gap: 15px;
+            }
+            
+            .social-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+            }
+        }
+
+        /* Улучшенные тултипы (подсказки) */
+        .social-icon {
+            position: relative;
+        }
+
+        /* Простые CSS тултипы для десктопа */
+        @media (hover: hover) and (pointer: fine) {
+            .social-icon:hover::before {
+            content: attr(title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #24292e;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            margin-bottom: 8px;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            animation: fadeInTooltip 0.2s ease forwards;
+            }
+            
+            .social-icon:hover::after {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 4px solid transparent;
+            border-top-color: #24292e;
+            margin-bottom: 0;
+            opacity: 0;
+            animation: fadeInTooltip 0.2s ease forwards;
+            }
+            
+            @keyframes fadeInTooltip {
+            to {
+                opacity: 1;
+            }
+            }
+        }
+
+        /* Для тач-устройств показываем тултип при тапе */
+        @media (hover: none) and (pointer: coarse) {
+            .social-icon:active {
+            transform: scale(0.95);
+            }
+        }
+
+        .menu-footer {
+            padding: 8px 16px;
+            background: #f6f8fa;
+            border-top: 1px solid #e1e4e8;
+            text-align: right;
+        }
+
+        .menu-version {
+            font-size: 11px;
+            color: #6a737d;
+        }
+
+        /* Адаптивные стили для основного меню */
+        @media (max-width: 768px) {
+            .common-menu {
+            border-radius: 6px;
+            }
+            
+            .menu-item {
+            padding: 12px 16px;
+            }
+            
+            .menu-item.active::before {
+            left: 2px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .menu-header {
             padding: 10px 12px;
-          }
-          
-          .menu-item {
+            }
+            
+            .menu-item {
             padding: 10px 12px;
-          }
-          
-          .menu-badge {
+            }
+            
+            .menu-badge {
             font-size: 10px;
             padding: 1px 5px;
-          }
+            }
         }
-      </style>
+        </style>
     `;
-  }
+    }
 
   // Генерация HTML-разметки
   getTemplate() {
     const currentUrl = this.getCleanUrl();
     
+    // Основные проекты
     const menuItems = projectsCatalog.map(project => {
-      const isActive = this.isCurrentPage(project.url);
-      const activeClass = isActive ? 'active' : '';
-      
-      return `
+        const isActive = this.isCurrentPage(project.url);
+        const activeClass = isActive ? 'active' : '';
+        
+        return `
         <a href="${project.url}" 
-           class="menu-item ${activeClass}"
-           title="${project.description}"
-           ${isActive ? 'aria-current="page"' : ''}>
-          <span class="menu-icon">${project.icon}</span>
-          <span class="menu-text">${project.name}</span>
-          ${project.badge ? `<span class="menu-badge">${project.badge}</span>` : ''}
+            class="menu-item ${activeClass}"
+            title="${project.description}"
+            ${isActive ? 'aria-current="page"' : ''}>
+            <span class="menu-icon">${project.icon}</span>
+            <span class="menu-text">${project.name}</span>
+            ${project.badge ? `<span class="menu-badge">${project.badge}</span>` : ''}
         </a>
-      `;
+        `;
+    }).join('');
+
+    // Социальные иконки
+    const socialIcons = socialLinks.map(social => {
+        return `
+        <a href="${social.url}" 
+            class="social-icon"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="${social.description}"
+            aria-label="${social.name}">
+            ${social.icon}
+        </a>
+        `;
     }).join('');
 
     return `
-      <div class="common-menu" role="navigation" aria-label="Навигация по справочникам">
+        <div class="common-menu" role="navigation" aria-label="Навигация по справочникам">
         <div class="menu-header">
-          <div class="menu-title">Справочники prog815</div>
+            <div class="menu-title">Справочники prog815</div>
         </div>
         <div class="menu-list" role="list">
-          ${menuItems}
+            ${menuItems}
         </div>
+        
+        ${socialLinks.length > 0 ? `
+            <div class="social-section">
+            <div class="social-label">Связь и обратная связь:</div>
+            <div class="social-icons">
+                ${socialIcons}
+            </div>
+            </div>
+        ` : ''}
+        
         <div class="menu-footer">
-          <span class="menu-version">v1.0</span>
+            <span class="menu-version">v1.1</span>
         </div>
-      </div>
+        </div>
     `;
-  }
+}
 
   // Рендеринг компонента
   render() {
-
     console.log('=== CommonProjectsMenu: начат рендеринг ===');
-    console.log('Текущий URL:', window.location.href);
-    console.log('Текущий pathname:', window.location.pathname);
     
     const currentUrl = this.getCleanUrl();
     
+    // Основные проекты
+    const menuItems = projectsCatalog.map(project => {
+        const isActive = this.isCurrentPage(project.url);
+        const activeClass = isActive ? 'active' : '';
+        
+        console.log(`Проверка проекта "${project.name}":`, {
+        projectUrl: project.url,
+        isActive: isActive,
+        currentPath: window.location.pathname,
+        targetPath: new URL(project.url).pathname
+        });
+        
+        return `
+        <a href="${project.url}" 
+            class="menu-item ${activeClass}"
+            title="${project.description}"
+            ${isActive ? 'aria-current="page"' : ''}>
+            <span class="menu-icon">${project.icon}</span>
+            <span class="menu-text">${project.name}</span>
+            ${project.badge ? `<span class="menu-badge">${project.badge}</span>` : ''}
+        </a>
+        `;
+    }).join('');
+
+    // Социальные иконки (горизонтальный ряд)
+    const socialIcons = socialLinks.map(social => {
+        return `
+        <a href="${social.url}" 
+            class="social-icon"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="${social.description}"
+            aria-label="${social.name}">
+            ${social.icon}
+        </a>
+        `;
+    }).join('');
+
+    // Собираем весь HTML
+    const template = `
+        <div class="common-menu" role="navigation" aria-label="Навигация по справочникам">
+        <div class="menu-header">
+            <div class="menu-title">Справочники prog815</div>
+        </div>
+        <div class="menu-list" role="list">
+            ${menuItems}
+        </div>
+        
+        ${socialLinks.length > 0 ? `
+            <div class="social-section">
+            <div class="social-label">Связь и обратная связь:</div>
+            <div class="social-icons">
+                ${socialIcons}
+            </div>
+            </div>
+        ` : ''}
+        
+        <div class="menu-footer">
+            <span class="menu-version">v1.1</span>
+        </div>
+        </div>
+    `;
+
+    // Вставляем HTML и стили в Shadow DOM
     this.shadowRoot.innerHTML = `
-      ${this.getStyles()}
-      ${this.getTemplate()}
+        ${this.getStyles()}
+        ${template}
     `;
     
-    // Добавляем обработчики кликов для улучшения UX
+    // Добавляем обработчики событий
     this.addEventListeners();
-  }
+    
+    // Добавляем обработчики для социальных иконок (для мобильных)
+    this.addSocialTooltips();
+    
+    console.log('=== CommonProjectsMenu: рендеринг завершен ===');
+    }
+
+    // Метод для добавления тултипов на мобильных (опционально)
+    addSocialTooltips() {
+    const socialIcons = this.shadowRoot.querySelectorAll('.social-icon');
+    
+    // Проверяем, мобильное ли устройство
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    if (!isTouchDevice) return; // На десктопе тултипы работают через CSS
+    
+    // Для тач-устройств добавляем обработку
+    socialIcons.forEach(icon => {
+        let tapTimer;
+        let tooltip = null;
+        
+        const showTooltip = () => {
+        const title = icon.getAttribute('title');
+        if (!title) return;
+        
+        // Удаляем старый тултип, если есть
+        if (tooltip) {
+            tooltip.remove();
+        }
+        
+        // Создаем новый тултип
+        tooltip = document.createElement('div');
+        tooltip.className = 'mobile-tooltip';
+        tooltip.textContent = title;
+        tooltip.style.cssText = `
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 10000;
+            white-space: nowrap;
+            max-width: 90vw;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        `;
+        
+        document.body.appendChild(tooltip);
+        
+        // Автоматически скрываем через 2 секунды
+        setTimeout(() => {
+            if (tooltip) {
+            tooltip.remove();
+            tooltip = null;
+            }
+        }, 2000);
+        };
+        
+        const hideTooltip = () => {
+        clearTimeout(tapTimer);
+        if (tooltip) {
+            setTimeout(() => {
+            if (tooltip) {
+                tooltip.remove();
+                tooltip = null;
+            }
+            }, 300);
+        }
+        };
+        
+        // Долгий тап для показа тултипа
+        icon.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        tapTimer = setTimeout(showTooltip, 500); // 0.5 секунды
+        }, { passive: false });
+        
+        icon.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        hideTooltip();
+        }, { passive: false });
+        
+        icon.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        hideTooltip();
+        }, { passive: false });
+        
+        // Обычный тап для перехода
+        icon.addEventListener('click', (e) => {
+        if (tapTimer) {
+            clearTimeout(tapTimer);
+        }
+        // Открываем ссылку (браузер сам обработает)
+        });
+    });
+    }
 
   // Добавление обработчиков событий
   addEventListeners() {
