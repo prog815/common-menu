@@ -1,4 +1,4 @@
-// menu.js - версия 1.2 с улучшенными текстами
+// menu.js - версия 1.3 с Яндекс.Метрикой
 
 // Конфигурация проектов
 const projectsCatalog = [
@@ -25,14 +25,83 @@ const socialLinks = [
     icon: '📢',
     description: 'Новости проекта и обратная связь'
   }
-  // Можно добавить позже:
-  // {
-  //   name: 'GitHub',
-  //   url: 'https://github.com/prog815',
-  //   icon: '🐙',
-  //   description: 'Исходный код проектов'
-  // }
 ];
+
+// Яндекс.Метрика счетчик
+class YandexMetrika {
+  static init() {
+    // Проверяем, не был ли уже инициализирован счетчик
+    if (window.ym && window.ym.a) {
+      return;
+    }
+
+    const counterId = 105817342;
+    
+    // Создаем скрипт Яндекс.Метрики
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.innerHTML = `
+      (function(m,e,t,r,i,k,a){
+          m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+          m[i].l=1*new Date();
+          for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+          k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+      })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=${counterId}', 'ym');
+
+      ym(${counterId}, 'init', {
+          ssr:true,
+          webvisor:true,
+          clickmap:true,
+          ecommerce:"dataLayer",
+          accurateTrackBounce:true,
+          trackLinks:true
+      });
+    `;
+    
+    // Создаем noscript для пользователей без JS
+    const noscript = document.createElement('noscript');
+    noscript.innerHTML = `<div><img src="https://mc.yandex.ru/watch/${counterId}" style="position:absolute; left:-9999px;" alt="" /></div>`;
+    
+    // Вставляем в head документа
+    document.head.appendChild(script);
+    document.head.appendChild(noscript);
+    
+    // Логирование для отладки
+    console.log(`✅ Яндекс.Метрика подключена (счетчик: ${counterId})`);
+    
+    // Добавляем атрибуты для отслеживания целей на ссылках
+    this.addGoalTracking();
+  }
+  
+  static addGoalTracking() {
+    // Отслеживание кликов по ссылкам навигации
+    document.addEventListener('click', function(e) {
+      const link = e.target.closest('a');
+      if (!link) return;
+      
+      const href = link.getAttribute('href');
+      const isProjectLink = projectsCatalog.some(project => 
+        href && (href === project.url || href.includes(project.url.replace('https://prog815.github.io/', '')))
+      );
+      
+      const isSocialLink = socialLinks.some(social => 
+        href && href === social.url
+      );
+      
+      if (isProjectLink && window.ym) {
+        const projectName = link.querySelector('.menu-text')?.textContent || 'unknown';
+        const goalName = `nav_to_${projectName.replace(/\s+/g, '_').toLowerCase()}`;
+        window.ym(105817342, 'reachGoal', goalName);
+      }
+      
+      if (isSocialLink && window.ym) {
+        const socialName = link.getAttribute('title') || link.getAttribute('aria-label') || 'unknown';
+        const goalName = `social_${socialName.replace(/\s+/g, '_').toLowerCase()}`;
+        window.ym(105817342, 'reachGoal', goalName);
+      }
+    });
+  }
+}
 
 // Основной класс компонента
 class CommonProjectsMenu extends HTMLElement {
@@ -43,6 +112,12 @@ class CommonProjectsMenu extends HTMLElement {
 
   connectedCallback() {
     this.render();
+    
+    // Инициализируем Яндекс.Метрику при первом подключении компонента
+    if (!window._yandexMetrikaInitialized) {
+      YandexMetrika.init();
+      window._yandexMetrikaInitialized = true;
+    }
   }
 
   // Получение текущего URL без параметров
@@ -151,7 +226,7 @@ class CommonProjectsMenu extends HTMLElement {
 
         .menu-text {
           flex-grow: 1;
-          min-width: 0; /* Для правильного обрезания текста */
+          min-width: 0;
         }
 
         .menu-badge {
@@ -299,7 +374,8 @@ class CommonProjectsMenu extends HTMLElement {
         <a href="${project.url}" 
            class="menu-item ${activeClass}"
            title="${project.description}"
-           ${isActive ? 'aria-current="page"' : ''}>
+           ${isActive ? 'aria-current="page"' : ''}
+           data-metrika-goal="nav_${project.name.replace(/\s+/g, '_').toLowerCase()}">
           <span class="menu-icon">${project.icon}</span>
           <span class="menu-text">${project.name}</span>
           ${project.badge ? `<span class="menu-badge">${project.badge}</span>` : ''}
@@ -315,7 +391,8 @@ class CommonProjectsMenu extends HTMLElement {
            target="_blank"
            rel="noopener noreferrer"
            title="${social.description}"
-           aria-label="${social.name}">
+           aria-label="${social.name}"
+           data-metrika-goal="social_${social.name.replace(/\s+/g, '_').toLowerCase()}">
           ${social.icon}
         </a>
       `;
@@ -339,6 +416,13 @@ class CommonProjectsMenu extends HTMLElement {
             </div>
           </div>
         ` : ''}
+        
+        <!-- Скрытый элемент для идентификации версии с Яндекс.Метрикой -->
+        <div style="display: none;" 
+             data-yandex-metrika="integrated" 
+             data-counter-id="105817342"
+             data-version="1.3">
+        </div>
       </div>
     `;
 
@@ -354,3 +438,12 @@ class CommonProjectsMenu extends HTMLElement {
 if (!customElements.get('common-projects-menu')) {
   customElements.define('common-projects-menu', CommonProjectsMenu);
 }
+
+// Проверка загрузки Яндекс.Метрики (отладочная информация)
+setTimeout(() => {
+  if (window.ym) {
+    console.log('✅ Яндекс.Метрика успешно загружена');
+  } else {
+    console.log('ℹ️ Яндекс.Метрика загружается...');
+  }
+}, 2000);
