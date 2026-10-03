@@ -1,468 +1,385 @@
-// menu.js - версия 1.3 с Яндекс.Метрикой
+// menu.js - версия 2.0.0: компактное горизонтальное меню проекта «Классик»
+(() => {
+  'use strict';
 
-// Конфигурация проектов
-const projectsCatalog = [
-  {
-    name: 'Справочник ОКПД2',
-    url: 'https://prog815.github.io/okpd2/',
-    icon: '🔍',
-    description: 'Полный классификатор ОКПД2 с поиском'
-  },
-  {
-    name: 'Справочник ОКВЭД2',
-    url: 'https://prog815.github.io/okved2/',
-    icon: '🏢',
-    description: 'Классификатор видов экономической деятельности'
-  },
-  {
-    name: 'Справочник ОКТМО',
-    url: 'https://prog815.github.io/oktmo/',
-    icon: '🏢',
-    description: 'Классификатор территорий муниципальных образований',
-    badge: 'Новый'
-  },
-  {
-    name: 'Справочник ПП 1875',
-    url: 'https://prog815.github.io/okpd2-pp1875/',
-    icon: '⚖️',
-    description: 'Национальный режим для ОКПД2',
-    badge: 'Нацрежим'
-  }
-];
+  const METRIKA_COUNTER_ID = 105817342;
 
-// Социальные сети и контакты (горизонтальный ряд иконок)
-const socialLinks = [
-  {
-    name: 'Telegram-канал',
-    url: 'https://t.me/smart_tabs',
-    icon: '📢',
-    description: 'Новости проекта и обратная связь'
-  },
-  {
-    name: 'ВКонтакте',
-    url: 'https://vk.com/klassik_rf',
-    icon: '💬',
-    description: 'Сообщество: обсуждения, вопросы, обратная связь'
-  }
-];
-
-// Яндекс.Метрика счетчик
-class YandexMetrika {
-  static init() {
-    // Проверяем, не был ли уже инициализирован счетчик
-    if (window.ym && window.ym.a) {
-      return;
+  // Конфигурация справочников
+  const projectsCatalog = [
+    {
+      label: 'ПП 1875',
+      title: 'ОКПД2 + ПП РФ № 1875',
+      url: 'https://prog815.github.io/okpd2-pp1875/',
+      match: '/okpd2-pp1875/',
+      goal: 'nav_pp1875'
+    },
+    {
+      label: 'ОКПД2',
+      title: 'Справочник ОКПД2',
+      url: 'https://prog815.github.io/okpd2/',
+      match: '/okpd2/',
+      goal: 'nav_okpd2'
+    },
+    {
+      label: 'ОКВЭД2',
+      title: 'Справочник ОКВЭД2',
+      url: 'https://prog815.github.io/okved2/',
+      match: '/okved2/',
+      goal: 'nav_okved2'
+    },
+    {
+      label: 'ОКТМО',
+      title: 'Справочник ОКТМО',
+      url: 'https://prog815.github.io/oktmo/',
+      match: '/oktmo/',
+      goal: 'nav_oktmo'
     }
+  ];
 
-    const counterId = 105817342;
-    
-    // Создаем скрипт Яндекс.Метрики
-    const script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.innerHTML = `
-      (function(m,e,t,r,i,k,a){
+  // Единственная внешняя ссылка: ВК-сообщество «Классик»
+  const communityLink = {
+    url: 'https://vk.com/klassik_rf',
+    desktopLabel: 'Сообщество',
+    mobileLabel: 'ВК',
+    title: 'ВК-сообщество «Классик»: новости проекта, обсуждения и обратная связь',
+    ariaLabel: 'ВК-сообщество «Классик»: новости проекта, обсуждения и обратная связь',
+    goal: 'social_vk'
+  };
+
+  // Яндекс.Метрика
+  class YandexMetrika {
+    static init() {
+      // Если счетчик уже есть, повторно не инициализируем
+      if (window.ym && window.ym.a) {
+        return;
+      }
+
+      this.addGoalTracking();
+
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.text = `
+        (function(m,e,t,r,i,k,a){
           m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
           m[i].l=1*new Date();
-          for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+          for (var j = 0; j < document.scripts.length; j++) {
+            if (document.scripts[j].src === r) {
+              return;
+            }
+          }
           k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-      })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=${counterId}', 'ym');
+        })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
 
-      ym(${counterId}, 'init', {
-          ssr:true,
-          webvisor:true,
-          clickmap:true,
-          ecommerce:"dataLayer",
-          accurateTrackBounce:true,
-          trackLinks:true
-      });
-    `;
-    
-    // Создаем noscript для пользователей без JS
-    const noscript = document.createElement('noscript');
-    noscript.innerHTML = `<div><img src="https://mc.yandex.ru/watch/${counterId}" style="position:absolute; left:-9999px;" alt="" /></div>`;
-    
-    // Вставляем в head документа
-    document.head.appendChild(script);
-    document.head.appendChild(noscript);
-    
-    // Логирование для отладки
-    console.log(`✅ Яндекс.Метрика подключена (счетчик: ${counterId})`);
-    
-    // Добавляем атрибуты для отслеживания целей на ссылках
-    this.addGoalTracking();
-  }
-  
-  static addGoalTracking() {
-    // Отслеживание кликов по ссылкам навигации
-    document.addEventListener('click', function(e) {
-      const link = e.target.closest('a');
-      if (!link) return;
-      
-      const href = link.getAttribute('href');
-      const isProjectLink = projectsCatalog.some(project => 
-        href && (href === project.url || href.includes(project.url.replace('https://prog815.github.io/', '')))
-      );
-      
-      const isSocialLink = socialLinks.some(social => 
-        href && href === social.url
-      );
-      
-      if (isProjectLink && window.ym) {
-        const projectName = link.querySelector('.menu-text')?.textContent || 'unknown';
-        const goalName = `nav_to_${projectName.replace(/\s+/g, '_').toLowerCase()}`;
-        window.ym(105817342, 'reachGoal', goalName);
+        ym(${METRIKA_COUNTER_ID}, 'init', {
+          ssr: true,
+          webvisor: true,
+          clickmap: true,
+          ecommerce: "dataLayer",
+          accurateTrackBounce: true,
+          trackLinks: true
+        });
+      `;
+
+      const noscript = document.createElement('noscript');
+      noscript.innerHTML = `
+        <div>
+          <img
+            src="https://mc.yandex.ru/watch/${METRIKA_COUNTER_ID}"
+            style="position:absolute; left:-9999px;"
+            alt=""
+          />
+        </div>
+      `;
+
+      const parent = document.head || document.documentElement;
+
+      if (parent) {
+        parent.appendChild(script);
+        parent.appendChild(noscript);
       }
-      
-      if (isSocialLink && window.ym) {
-        const socialName = link.getAttribute('title') || link.getAttribute('aria-label') || 'unknown';
-        const goalName = `social_${socialName.replace(/\s+/g, '_').toLowerCase()}`;
-        window.ym(105817342, 'reachGoal', goalName);
+
+      console.log(`✅ Яндекс.Метрика подключена (счетчик: ${METRIKA_COUNTER_ID})`);
+    }
+
+    static addGoalTracking() {
+      // Защита от повторного навешивания обработчика
+      if (window._commonMenuMetrikaGoalsAttached) {
+        return;
       }
-    });
-  }
-}
 
-// Основной класс компонента
-class CommonProjectsMenu extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: 'open' });
-  }
+      window._commonMenuMetrikaGoalsAttached = true;
 
-  connectedCallback() {
-    this.render();
-    
-    // Инициализируем Яндекс.Метрику при первом подключении компонента
-    if (!window._yandexMetrikaInitialized) {
-      YandexMetrika.init();
-      window._yandexMetrikaInitialized = true;
+      document.addEventListener(
+        'click',
+        (event) => {
+          if (
+            event.defaultPrevented ||
+            event.button !== 0 ||
+            event.metaKey ||
+            event.ctrlKey ||
+            event.shiftKey ||
+            event.altKey
+          ) {
+            return;
+          }
+
+          // composedPath нужен для корректной работы с Shadow DOM
+          const path =
+            typeof event.composedPath === 'function'
+              ? event.composedPath()
+              : [];
+
+          const link =
+            path.find((node) => node && node.nodeName === 'A') ||
+            (event.target && event.target.closest
+              ? event.target.closest('a')
+              : null);
+
+          if (!link) {
+            return;
+          }
+
+          const goal = link.getAttribute('data-metrika-goal');
+
+          if (goal && window.ym) {
+            window.ym(METRIKA_COUNTER_ID, 'reachGoal', goal);
+          }
+        },
+        true
+      );
     }
   }
 
-  // Получение текущего URL без параметров
-  getCleanUrl() {
-    return window.location.href.split('?')[0].split('#')[0];
-  }
+  // Основной компонент меню
+  class CommonProjectsMenu extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+    }
 
-  // Проверка, является ли ссылка текущей страницей
-  isCurrentPage(url) {
-    // Сравниваем путь (pathname) - это самое надежное
-    const currentPath = window.location.pathname.replace(/\/$/, '');
-    const targetPath = new URL(url).pathname.replace(/\/$/, '');
-    
-    return currentPath === targetPath;
-  }
+    connectedCallback() {
+      // Рендерим только один раз
+      if (!this.shadowRoot.firstChild) {
+        this.render();
+      }
 
-  // Генерация стилей
-  getStyles() {
-    return `
-      <style>
-        :host {
-          display: block;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          font-size: 14px;
-          line-height: 1.5;
-          margin: 20px 0;
-        }
+      // Инициализируем Яндекс.Метрику при первом подключении компонента
+      if (!window._commonMenuYandexMetrikaInitialized) {
+        YandexMetrika.init();
+        window._commonMenuYandexMetrikaInitialized = true;
+      }
+    }
 
-        .common-menu {
-          background: #ffffff;
-          border: 1px solid #e1e4e8;
-          border-radius: 8px;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-          overflow: hidden;
-        }
+    isCurrentPage(matchPath) {
+      const path = window.location.pathname.replace(/index\.html$/i, '');
+      const currentPath = path.endsWith('/') ? path : `${path}/`;
+      return currentPath.startsWith(matchPath);
+    }
 
-        .menu-header {
-          padding: 12px 16px;
-          background: #f6f8fa;
-          border-bottom: 1px solid #e1e4e8;
-        }
-
-        .menu-title {
-          font-weight: 600;
-          color: #24292e;
-          font-size: 15px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .menu-title::before {
-          content: '📚';
-        }
-
-        .menu-list {
-          list-style: none;
-          padding: 0;
-          margin: 0;
-        }
-
-        .menu-item {
-          display: flex;
-          align-items: center;
-          padding: 12px 16px;
-          text-decoration: none;
-          color: #24292e;
-          border-bottom: 1px solid #f0f0f0;
-          transition: background-color 0.15s ease;
-          position: relative;
-        }
-
-        .menu-item:last-child {
-          border-bottom: none;
-        }
-
-        .menu-item:hover {
-          background-color: #f6f8fa;
-        }
-
-        .menu-item.active {
-          background-color: #f0f7ff;
-          border-left: 3px solid #0969da;
-        }
-
-        .menu-item.active::before {
-          content: '→';
-          position: absolute;
-          left: 4px;
-          color: #0969da;
-          font-weight: bold;
-        }
-
-        .menu-item.active .menu-text {
-          color: #0969da;
-          font-weight: 500;
-        }
-
-        .menu-icon {
-          margin-right: 12px;
-          font-size: 18px;
-          width: 24px;
-          text-align: center;
-          flex-shrink: 0;
-        }
-
-        .menu-text {
-          flex-grow: 1;
-          min-width: 0;
-        }
-
-        .menu-badge {
-          background: #d73a49;
-          color: white;
-          font-size: 11px;
-          padding: 3px 8px;
-          border-radius: 10px;
-          font-weight: 600;
-          margin-left: 8px;
-          white-space: nowrap;
-          flex-shrink: 0;
-        }
-
-        /* Секция социальных сетей */
-        .social-section {
-          padding: 16px;
-          border-top: 1px solid #e1e4e8;
-          background: #fafbfc;
-        }
-
-        .social-label {
-          font-size: 13px;
-          color: #6a737d;
-          margin-bottom: 12px;
-          text-align: center;
-          font-weight: 500;
-        }
-
-        .social-icons {
-          display: flex;
-          justify-content: center;
-          gap: 16px;
-          flex-wrap: wrap;
-        }
-
-        .social-icon {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          background: white;
-          border: 1px solid #e1e4e8;
-          font-size: 20px;
-          text-decoration: none;
-          color: #24292e;
-          transition: all 0.2s ease;
-          cursor: pointer;
-          position: relative;
-        }
-
-        .social-icon:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-          border-color: #0969da;
-        }
-
-        .social-icon:active {
-          transform: translateY(0);
-        }
-
-        /* Специальные стили для Telegram */
-        .social-icon[title*="Telegram"] {
-          background: linear-gradient(135deg, #0088cc 0%, #0077b5 100%);
-          color: white;
-          border-color: #0088cc;
-        }
-
-        .social-icon[title*="Telegram"]:hover {
-          background: linear-gradient(135deg, #0077b5 0%, #0066a3 100%);
-          box-shadow: 0 4px 12px rgba(0, 136, 204, 0.3);
-        }
-
-        /* Адаптивные стили */
-        @media (max-width: 768px) {
-          .common-menu {
-            border-radius: 6px;
-          }
-          
-          .menu-item {
-            padding: 14px 16px;
-          }
-          
-          .social-icon {
-            width: 44px;
-            height: 44px;
-            font-size: 22px;
-          }
-          
-          .social-icons {
-            gap: 20px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .menu-header {
-            padding: 10px 12px;
-          }
-          
-          .menu-item {
-            padding: 12px 14px;
-          }
-          
-          .menu-icon {
-            margin-right: 10px;
-            font-size: 16px;
-            width: 20px;
-          }
-          
-          .menu-badge {
-            font-size: 10px;
-            padding: 2px 6px;
-          }
-          
-          .social-icons {
-            gap: 16px;
-          }
-          
-          .social-icon {
-            width: 40px;
-            height: 40px;
-            font-size: 20px;
-          }
-          
-          .social-section {
-            padding: 14px;
-          }
-        }
-      </style>
-    `;
-  }
-
-  // Рендеринг компонента
-  render() {
-    const currentUrl = this.getCleanUrl();
-    
-    // Основные проекты
-    const menuItems = projectsCatalog.map(project => {
-      const isActive = this.isCurrentPage(project.url);
-      const activeClass = isActive ? 'active' : '';
-      
+    getStyles() {
       return `
-        <a href="${project.url}" 
-           class="menu-item ${activeClass}"
-           title="${project.description}"
-           ${isActive ? 'aria-current="page"' : ''}
-           data-metrika-goal="nav_${project.name.replace(/\s+/g, '_').toLowerCase()}">
-          <span class="menu-icon">${project.icon}</span>
-          <span class="menu-text">${project.name}</span>
-          ${project.badge ? `<span class="menu-badge">${project.badge}</span>` : ''}
-        </a>
-      `;
-    }).join('');
+        <style>
+          :host {
+            display: block;
+            margin: 0;
+          }
 
-    // Социальные иконки
-    const socialIcons = socialLinks.map(social => {
-      return `
-        <a href="${social.url}" 
-           class="social-icon"
-           target="_blank"
-           rel="noopener noreferrer"
-           title="${social.description}"
-           aria-label="${social.name}"
-           data-metrika-goal="social_${social.name.replace(/\s+/g, '_').toLowerCase()}">
-          ${social.icon}
-        </a>
-      `;
-    }).join('');
+          .menu {
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          }
 
-    // Собираем весь HTML
-    const template = `
-      <div class="common-menu" role="navigation" aria-label="Навигация по справочникам">
-        <div class="menu-header">
-          <div class="menu-title">Другие справочники</div>
-        </div>
-        <div class="menu-list" role="list">
-          ${menuItems}
-        </div>
-        
-        ${socialLinks.length > 0 ? `
-          <div class="social-section">
-            <div class="social-label">Сообщество и связь</div>
-            <div class="social-icons">
-              ${socialIcons}
-            </div>
+          .menu--sticky {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+          }
+
+          .menu__items {
+            display: flex;
+            flex: 1 1 auto;
+            min-width: 0;
+            gap: 6px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+          }
+
+          .menu__items::-webkit-scrollbar {
+            display: none;
+          }
+
+          .menu__item {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            color: #334155;
+            text-decoration: none;
+            font-size: 14px;
+            line-height: 1.2;
+            white-space: nowrap;
+          }
+
+          .menu__item:hover {
+            background: #f8fafc;
+            color: #0f172a;
+          }
+
+          .menu__item:focus-visible,
+          .menu__community:focus-visible {
+            outline: 2px solid #1e3a8a;
+            outline-offset: 2px;
+          }
+
+          .menu__item--active {
+            background: #eaf2fb;
+            border-color: #8fc1e8;
+            color: #1e3a8a;
+            font-weight: 600;
+          }
+
+          .menu__item--active:hover {
+            background: #dcebf9;
+          }
+
+          .menu__community {
+            flex: 0 0 auto;
+            margin-left: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #1e3a8a;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 14px;
+            line-height: 1.2;
+            white-space: nowrap;
+          }
+
+          .menu__community:hover {
+            background: #172e6e;
+            color: #ffffff;
+          }
+
+          .menu__community-mobile {
+            display: none;
+          }
+
+          @media (max-width: 640px) {
+            .menu {
+              padding: 6px 8px;
+              gap: 6px;
+            }
+
+            .menu__item {
+              padding: 5px 8px;
+              font-size: 13px;
+            }
+
+            .menu__community {
+              padding: 5px 8px;
+              font-size: 13px;
+            }
+
+            .menu__community-desktop {
+              display: none;
+            }
+
+            .menu__community-mobile {
+              display: inline;
+            }
+          }
+        </style>
+      `;
+    }
+
+    render() {
+      const stickyClass = this.hasAttribute('sticky') ? ' menu--sticky' : '';
+
+      const menuItems = projectsCatalog
+        .map((project) => {
+          const isActive = this.isCurrentPage(project.match);
+
+          return `
+            <a
+              class="menu__item${isActive ? ' menu__item--active' : ''}"
+              href="${project.url}"
+              title="${project.title}"
+              ${isActive ? 'aria-current="page"' : ''}
+              data-metrika-goal="${project.goal}"
+            >
+              ${project.label}
+            </a>
+          `;
+        })
+        .join('');
+
+      const template = `
+        ${this.getStyles()}
+
+        <nav
+          class="menu${stickyClass}"
+          aria-label="Навигация по справочникам"
+          data-menu-version="2.0.0"
+          data-yandex-metrika="integrated"
+          data-counter-id="${METRIKA_COUNTER_ID}"
+        >
+          <div class="menu__items">
+            ${menuItems}
           </div>
-        ` : ''}
-        
-        <!-- Скрытый элемент для идентификации версии с Яндекс.Метрикой -->
-        <div style="display: none;" 
-             data-yandex-metrika="integrated" 
-             data-counter-id="105817342"
-             data-version="1.3">
-        </div>
-      </div>
-    `;
 
-    // Вставляем HTML и стили в Shadow DOM
-    this.shadowRoot.innerHTML = `
-      ${this.getStyles()}
-      ${template}
-    `;
+          <a
+            class="menu__community"
+            href="${communityLink.url}"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="${communityLink.title}"
+            aria-label="${communityLink.ariaLabel}"
+            data-metrika-goal="${communityLink.goal}"
+          >
+            <span class="menu__community-desktop">${communityLink.desktopLabel}</span>
+            <span class="menu__community-mobile">${communityLink.mobileLabel}</span>
+          </a>
+        </nav>
+      `;
+
+      this.shadowRoot.innerHTML = template;
+
+      // Если активный пункт не виден на мобильных, подводим его в видимую область
+      const activeItem = this.shadowRoot.querySelector('.menu__item--active');
+
+      if (activeItem) {
+        activeItem.scrollIntoView({
+          inline: 'center',
+          block: 'nearest'
+        });
+      }
+    }
   }
-}
 
-// Регистрация кастомного элемента
-if (!customElements.get('common-projects-menu')) {
-  customElements.define('common-projects-menu', CommonProjectsMenu);
-}
-
-// Проверка загрузки Яндекс.Метрики (отладочная информация)
-setTimeout(() => {
-  if (window.ym) {
-    console.log('✅ Яндекс.Метрика успешно загружена');
-  } else {
-    console.log('ℹ️ Яндекс.Метрика загружается...');
+  // Регистрация кастомного элемента
+  if (!customElements.get('common-projects-menu')) {
+    customElements.define('common-projects-menu', CommonProjectsMenu);
   }
-}, 2000);
+
+  // Проверка загрузки Яндекс.Метрики, отладочная информация
+  setTimeout(() => {
+    if (window.ym) {
+      console.log('✅ Яндекс.Метрика успешно загружена');
+    } else {
+      console.log('ℹ️ Яндекс.Метрика загружается...');
+    }
+  }, 2000);
+})();
