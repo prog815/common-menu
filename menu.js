@@ -37,6 +37,12 @@ const socialLinks = [
     url: 'https://t.me/smart_tabs',
     icon: '📢',
     description: 'Новости проекта и обратная связь'
+  },
+  {
+    name: 'ВКонтакте',
+    url: 'https://vk.com/klassik_rf',
+    icon: '💬',
+    description: 'Сообщество: обсуждения, вопросы, обратная связь'
   }
 ];
 
@@ -423,7 +429,7 @@ class CommonProjectsMenu extends HTMLElement {
         
         ${socialLinks.length > 0 ? `
           <div class="social-section">
-            <div class="social-label">Связь с разработчиком</div>
+            <div class="social-label">Сообщество и связь</div>
             <div class="social-icons">
               ${socialIcons}
             </div>
