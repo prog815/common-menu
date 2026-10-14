@@ -1,4 +1,4 @@
-// menu.js - версия 2.0.0: компактное горизонтальное меню проекта «Классик»
+// menu.js - версия 2.1.0: компактное горизонтальное меню проекта «Классик» + ОКЕИ
 (() => {
   'use strict';
 
@@ -33,6 +33,13 @@
       url: 'https://prog815.github.io/oktmo/',
       match: '/oktmo/',
       goal: 'nav_oktmo'
+    },
+    {
+      label: 'ОКЕИ',
+      title: 'Справочник ОКЕИ',
+      url: 'https://prog815.github.io/okei/',
+      match: '/okei/',
+      goal: 'nav_okei'
     }
   ];
 
@@ -332,7 +339,7 @@
         <nav
           class="menu${stickyClass}"
           aria-label="Навигация по справочникам"
-          data-menu-version="2.0.0"
+          data-menu-version="2.1.0"
           data-yandex-metrika="integrated"
           data-counter-id="${METRIKA_COUNTER_ID}"
         >
