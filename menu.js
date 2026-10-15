@@ -35,6 +35,13 @@
       goal: 'nav_oktmo'
     },
     {
+      label: 'ОКАТО',
+      title: 'Справочник ОКАТО',
+      url: 'https://prog815.github.io/okato/',
+      match: '/okato/',
+      goal: 'nav_okato'
+    },
+    {
       label: 'ОКЕИ',
       title: 'Справочник ОКЕИ',
       url: 'https://prog815.github.io/okei/',
