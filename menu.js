@@ -1,8 +1,9 @@
-// menu.js - версия 2.1.0: компактное горизонтальное меню проекта «Классик» + ОКЕИ
+// menu.js - версия 2.2.0: компактное горизонтальное меню проекта «Классик» + ОКЕИ + Google Analytics
 (() => {
   'use strict';
 
   const METRIKA_COUNTER_ID = 105817342;
+  const GOOGLE_ANALYTICS_ID = 'G-SM54ENZHYS';
 
   // Конфигурация справочников
   const projectsCatalog = [
@@ -59,6 +60,133 @@
     ariaLabel: 'ВК-сообщество «Классик»: новости проекта, обсуждения и обратная связь',
     goal: 'social_vk'
   };
+
+  // Google Analytics 4
+  class GoogleAnalytics {
+    static init() {
+      if (window._commonMenuGoogleAnalyticsInitialized) {
+        return;
+      }
+
+      window._commonMenuGoogleAnalyticsInitialized = true;
+
+      // Отслеживаем клики по общему меню
+      this.addClickTracking();
+
+      const catalog = this.getCatalog();
+
+      // Если Google Analytics уже была загружена где-то ранее,
+      // повторно не грузим тег, но пробуем добавить catalog для будущих событий.
+      if (typeof window.gtag === 'function') {
+        window.gtag('config', GOOGLE_ANALYTICS_ID, {
+          send_page_view: false,
+          catalog: catalog
+        });
+
+        console.log(
+          `ℹ️ Google Analytics уже была загружена. Добавили catalog=${catalog} без повторного page_view.`
+        );
+
+        return;
+      }
+
+      // Стандартная инициализация dataLayer и gtag
+      window.dataLayer = window.dataLayer || [];
+
+      window.gtag = function () {
+        window.dataLayer.push(arguments);
+      };
+
+      window.gtag('js', new Date());
+
+      // Отправляем настройку GA4 вместе с параметром справочника
+      window.gtag('config', GOOGLE_ANALYTICS_ID, {
+        catalog: catalog
+      });
+
+      // Динамически добавляем скрипт Google Analytics
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}`;
+
+      const parent = document.head || document.documentElement;
+
+      if (parent) {
+        parent.appendChild(script);
+      }
+
+      console.log(
+        `✅ Google Analytics подключена через menu.js (ID: ${GOOGLE_ANALYTICS_ID}, catalog: ${catalog})`
+      );
+    }
+
+    static getCatalog() {
+      const path = window.location.pathname.replace(/index\.html$/i, '');
+      const normalizedPath = path.endsWith('/') ? path : `${path}/`;
+
+      // Порядок важен: okpd2-pp1875 должен идти раньше okpd2
+      const match = normalizedPath.match(
+        /^\/(okpd2-pp1875|okpd2|oktmo|okved2|okato|okei)\//
+      );
+
+      return match ? match[1] : 'other';
+    }
+
+    static addClickTracking() {
+      if (window._commonMenuGoogleAnalyticsClicksAttached) {
+        return;
+      }
+
+      window._commonMenuGoogleAnalyticsClicksAttached = true;
+
+      document.addEventListener(
+        'click',
+        (event) => {
+          if (
+            event.defaultPrevented ||
+            event.button !== 0 ||
+            event.metaKey ||
+            event.ctrlKey ||
+            event.shiftKey ||
+            event.altKey
+          ) {
+            return;
+          }
+
+          // composedPath нужен для корректной работы с Shadow DOM
+          const path =
+            typeof event.composedPath === 'function'
+              ? event.composedPath()
+              : [];
+
+          const link =
+            path.find((node) => node && node.nodeName === 'A') ||
+            (event.target && event.target.closest
+              ? event.target.closest('a')
+              : null);
+
+          if (!link) {
+            return;
+          }
+
+          // Переиспользуем data-metrika-goal, который уже есть в меню
+          const goal = link.getAttribute('data-metrika-goal');
+
+          if (!goal || typeof window.gtag !== 'function') {
+            return;
+          }
+
+          window.gtag('event', 'menu_click', {
+            catalog: this.getCatalog(),
+            goal: goal,
+            link_url: link.href,
+            link_text: (link.textContent || '').trim().slice(0, 100)
+          });
+        },
+        true
+      );
+    }
+  }
 
   // Яндекс.Метрика
   class YandexMetrika {
@@ -176,6 +304,9 @@
       if (!this.shadowRoot.firstChild) {
         this.render();
       }
+
+      // Инициализируем Google Analytics при первом подключении компонента
+      GoogleAnalytics.init();
 
       // Инициализируем Яндекс.Метрику при первом подключении компонента
       if (!window._commonMenuYandexMetrikaInitialized) {
@@ -346,8 +477,10 @@
         <nav
           class="menu${stickyClass}"
           aria-label="Навигация по справочникам"
-          data-menu-version="2.1.0"
+          data-menu-version="2.2.0"
           data-yandex-metrika="integrated"
+          data-google-analytics="integrated"
+          data-ga-measurement-id="${GOOGLE_ANALYTICS_ID}"
           data-counter-id="${METRIKA_COUNTER_ID}"
         >
           <div class="menu__items">
