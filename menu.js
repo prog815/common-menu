@@ -48,6 +48,13 @@
       url: 'https://prog815.github.io/okei/',
       match: '/okei/',
       goal: 'nav_okei'
+    },
+    {
+      label: 'ОКОГУ',
+      title: 'Справочник ОКОГУ',
+      url:   'https://prog815.github.io/okogu/',
+      match: '/okogu/',
+      goal:  'nav_okogu'
     }
   ];
 
