@@ -55,6 +55,13 @@
       url:   'https://prog815.github.io/okogu/',
       match: '/okogu/',
       goal:  'nav_okogu'
+    },
+    { 
+      label:'ОКОПФ', 
+      title:'Справочник ОКОПФ',
+      url:'https://prog815.github.io/okopf/', 
+      match:'/okopf/', 
+      goal:'nav_okopf' 
     }
   ];
 
