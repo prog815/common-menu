@@ -62,6 +62,13 @@
       url:'https://prog815.github.io/okopf/', 
       match:'/okopf/', 
       goal:'nav_okopf' 
+    },
+    {
+      label: 'ОКФС',
+      title: 'Справочник ОКФС',
+      url: 'https://prog815.github.io/okfs/',
+      match: '/okfs/',
+      goal: 'nav_okfs'
     }
   ];
 
