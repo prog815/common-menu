@@ -83,6 +83,13 @@
       url: 'https://prog815.github.io/oksm/',
       match: '/oksm/',
       goal: 'nav_oksm'
+    },
+    {
+      label: 'ОКОФ',
+      title: 'Справочник ОКОФ',
+      url: 'https://prog815.github.io/okof/',
+      match: '/okof/',
+      goal: 'nav_okof'
     }
   ];
 
