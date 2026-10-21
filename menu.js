@@ -90,6 +90,13 @@
       url: 'https://prog815.github.io/okof/',
       match: '/okof/',
       goal: 'nav_okof'
+    },
+    { // <-- Добавляем запятую сюда
+      label: 'ОКЗ',
+      title: 'Справочник ОКЗ',
+      url: 'https://prog815.github.io/okz/',
+      match: '/okz/',
+      goal: 'nav_okz'
     }
   ];
 
