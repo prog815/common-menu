@@ -97,6 +97,13 @@
       url: 'https://prog815.github.io/okz/',
       match: '/okz/',
       goal: 'nav_okz'
+    },
+    { // <-- Наш новый справочник ОКСО
+      label: 'ОКСО',
+      title: 'Справочник ОКСО',
+      url: 'https://prog815.github.io/okso/',
+      match: '/okso/',
+      goal: 'nav_okso'
     }
   ];
 
