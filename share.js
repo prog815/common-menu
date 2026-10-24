@@ -1,7 +1,7 @@
 // share.js — версия 1.0.0
 // Общая библиотека «Поделиться» проекта «Классик».
 // На мобильных устройствах вызывает системное меню (navigator.share).
-// На десктопах открывает модалку с 4 веб-почтами и копированием.
+// На десктопах открывает модалку с веб-почтами и копированием.
 
 (() => {
   'use strict';
@@ -49,8 +49,12 @@
       gmail: 'https://mail.google.com/mail/?view=cm&fs=1&su=' + s + '&body=' + b,
       yandex: 'https://mail.yandex.ru/compose?subject=' + s + '&body=' + b,
       mailru: 'https://e.mail.ru/compose/?subject=' + s + '&body=' + b,
-      // Исправленный путь для Рамблера
-      rambler: 'https://mail.rambler.ru/compose?subject=' + s + '&body=' + b
+      // Outlook (личные аккаунты)
+      outlook: 'https://outlook.live.com/mail/0/deeplink/compose?subject=' + s + '&body=' + b,
+      // Yahoo Mail
+      yahoo: 'https://compose.mail.yahoo.com/?subject=' + s + '&body=' + b,
+      // Локальный почтовый клиент (Outlook, Thunderbird, Apple Mail и т.п.)
+      mailto: 'mailto:?subject=' + s + '&body=' + b
     };
   }
 
@@ -89,24 +93,15 @@
     }[c]));
   }
 
-  /**
-   * Формирует ссылки для веб-почт с учётом ограничения длины URL.
-   * Если полный текст не помещается в безопасный лимит, ссылки
-   * строятся с укороченным телом (только код и ссылка на карточку).
-   */
   function getSafeEmailLinks(title, text, url) {
-    // Пробуем полный текст
     let body = text + (text ? '\n\n' : '') + url;
     let links = buildEmailLinks(title, body);
 
-    // Проверяем длину каждой ссылки
     const maxLen = Math.max(...Object.values(links).map(l => l.length));
     if (maxLen <= MAX_URL_LENGTH) {
       return { links, isTruncated: false };
     }
 
-    // Если не помещается — укорачиваем тело до "код; ссылка"
-    // (предполагаем, что первая строка text — это "код; название")
     const firstLine = text.split('\n')[0] || '';
     body = firstLine + (firstLine ? '\n\n' : '') + url;
     links = buildEmailLinks(title, body);
@@ -123,7 +118,6 @@
       this._onClickBound = this._handleClick.bind(this);
       this._onKeyDownBound = this._handleKeyDown.bind(this);
       this._toastTimer = null;
-      this._isTruncated = false;
     }
 
     connectedCallback() {
@@ -154,7 +148,6 @@
     _handleClick(event) {
       const path = event.composedPath();
 
-      // Игнорируем клики внутри собственной модалки/тоста
       for (const el of path) {
         if (el === this.shadowRoot) break;
         if (el && el.nodeType === 1 && el.classList) {
@@ -184,7 +177,6 @@
       const url = this.shareUrl;
       const catalog = this.catalog;
 
-      // На мобильных устройствах приоритет — системное меню
       if (isMobileDevice() && typeof navigator.share === 'function') {
         try {
           await navigator.share({ title, text, url });
@@ -193,15 +185,12 @@
         } catch (err) {
           const isAbort = err && err.name === 'AbortError';
           if (isAbort) {
-            // Пользователь передумал делиться — тихо закрываемся
             this._emit('native_cancelled', null, catalog, text, url);
             return;
           }
-          // Если произошла ошибка (нет приложений и т.д.) — падаем в модалку
         }
       }
 
-      // На десктопе (или если системное меню не сработало) — открываем модалку
       this._openModal();
     }
 
@@ -241,7 +230,6 @@
           this._emit('copy_text', null, catalog, text, url);
         });
       } else if (action === 'native') {
-        // Пользователь нажал "Открыть системное меню" внутри модалки
         if (typeof navigator.share === 'function') {
           navigator.share({ title: this.shareTitle, text, url })
             .then(() => {
@@ -403,15 +391,15 @@
 
           .ks-mail-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 8px;
             width: 100%;
             margin-bottom: 6px;
           }
           .ks-mail-grid a {
             text-align: center;
-            padding: 8px 12px;
-            font-size: 13px;
+            padding: 8px 6px;
+            font-size: 12.5px;
             font-weight: 500;
             background: #fff;
             color: #2d3748;
@@ -419,6 +407,7 @@
             border-radius: 8px;
             text-decoration: none;
             transition: all 0.15s;
+            white-space: nowrap;
           }
           .ks-mail-grid a:hover {
             background: #f7fafc;
@@ -475,7 +464,7 @@
 
           @media (max-width: 640px) {
             .ks-dialog { padding: 20px; }
-            .ks-mail-grid { grid-template-columns: 1fr; }
+            .ks-mail-grid { grid-template-columns: repeat(2, 1fr); }
           }
         </style>
       `;
@@ -486,11 +475,9 @@
       const text = this.shareText;
       const url = this.shareUrl;
       const { links: emailLinks, isTruncated } = getSafeEmailLinks(title, text, url);
-      this._isTruncated = isTruncated;
 
       const body = text + (text ? '\n\n' : '') + url;
 
-      // Кнопка "Открыть системное меню" показывается только если API доступно
       const hasNativeShare = typeof navigator.share === 'function';
       const nativeBtnStyle = hasNativeShare ? 'inline-flex' : 'none';
 
@@ -527,18 +514,31 @@
                  data-ks-provider="gmail">Gmail</a>
               <a href="${escHtml(emailLinks.yandex)}" target="_blank"
                  rel="noopener" data-ks-action="email_yandex"
-                 data-ks-provider="yandex">Яндекс.Почта</a>
+                 data-ks-provider="yandex">Яндекс</a>
               <a href="${escHtml(emailLinks.mailru)}" target="_blank"
                  rel="noopener" data-ks-action="email_mailru"
                  data-ks-provider="mailru">Mail.ru</a>
-              <a href="${escHtml(emailLinks.rambler)}" target="_blank"
-                 rel="noopener" data-ks-action="email_rambler"
-                 data-ks-provider="rambler">Рамблер</a>
+              <a href="${escHtml(emailLinks.outlook)}" target="_blank"
+                 rel="noopener" data-ks-action="email_outlook"
+                 data-ks-provider="outlook">Outlook</a>
+              <a href="${escHtml(emailLinks.yahoo)}" target="_blank"
+                 rel="noopener" data-ks-action="email_yahoo"
+                 data-ks-provider="yahoo">Yahoo</a>
             </div>
+
+            <div class="ks-label">Или откройте в установленной программе:</div>
+            <a href="${escHtml(emailLinks.mailto)}"
+               class="ks-btn ks-btn--native"
+               data-ks-action="email_mailto"
+               data-ks-provider="mailto"
+               data-ks-native="true"
+               style="display: inline-flex;">
+              💻 Почтовый клиент
+            </a>
 
             <button type="button" class="ks-btn ks-btn--native"
                     data-ks-action="native" style="display: ${nativeBtnStyle};">
-              📱 Открыть системное меню
+              📱 Системное меню
             </button>
           </div>
         </div>
@@ -546,12 +546,10 @@
         <div class="ks-toast" role="status" aria-live="polite"></div>
       `;
 
-      // Закрытие (крестик + фон)
       this.shadowRoot.querySelectorAll('[data-ks-close]').forEach((el) => {
         el.addEventListener('click', () => this._closeModal());
       });
 
-      // Обработка кликов по кнопкам модалки
       this.shadowRoot.querySelectorAll('[data-ks-action]').forEach((el) => {
         el.addEventListener('click', (e) => {
           const action = el.getAttribute('data-ks-action');
@@ -561,6 +559,8 @@
 
           if (action.indexOf('email_') === 0) {
             const provider = el.getAttribute('data-ks-provider') || 'unknown';
+            const isNative = el.getAttribute('data-ks-native') === 'true';
+
             sendAnalytics(catalog, 'email', provider);
             this.dispatchEvent(new CustomEvent('klassik-share', {
               bubbles: true,
@@ -569,7 +569,10 @@
                 catalog, method: 'email', email_provider: provider, text: sText, url: sUrl
               }
             }));
-            setTimeout(() => this._closeModal(), 250);
+
+            if (!isNative) {
+              setTimeout(() => this._closeModal(), 250);
+            }
           } else {
             e.preventDefault();
             this._handleAction(action);
@@ -577,7 +580,6 @@
         });
       });
 
-      // Заполняем textarea реальным текстом
       const ta = this.shadowRoot.querySelector('.ks-textarea');
       if (ta) {
         ta.value = body;
