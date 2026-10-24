@@ -7,6 +7,7 @@
   'use strict';
 
   const METRIKA_COUNTER_ID = 105817342;
+  const MAX_URL_LENGTH = 1500; // Безопасный лимит для GET-запросов в веб-почты
 
   // ---------- вспомогательное ----------
 
@@ -48,7 +49,8 @@
       gmail: 'https://mail.google.com/mail/?view=cm&fs=1&su=' + s + '&body=' + b,
       yandex: 'https://mail.yandex.ru/compose?subject=' + s + '&body=' + b,
       mailru: 'https://e.mail.ru/compose/?subject=' + s + '&body=' + b,
-      rambler: 'https://mail.rambler.ru/mail/compose?subject=' + s + '&body=' + b
+      // Исправленный путь для Рамблера
+      rambler: 'https://mail.rambler.ru/compose?subject=' + s + '&body=' + b
     };
   }
 
@@ -87,6 +89,31 @@
     }[c]));
   }
 
+  /**
+   * Формирует ссылки для веб-почт с учётом ограничения длины URL.
+   * Если полный текст не помещается в безопасный лимит, ссылки
+   * строятся с укороченным телом (только код и ссылка на карточку).
+   */
+  function getSafeEmailLinks(title, text, url) {
+    // Пробуем полный текст
+    let body = text + (text ? '\n\n' : '') + url;
+    let links = buildEmailLinks(title, body);
+
+    // Проверяем длину каждой ссылки
+    const maxLen = Math.max(...Object.values(links).map(l => l.length));
+    if (maxLen <= MAX_URL_LENGTH) {
+      return { links, isTruncated: false };
+    }
+
+    // Если не помещается — укорачиваем тело до "код; ссылка"
+    // (предполагаем, что первая строка text — это "код; название")
+    const firstLine = text.split('\n')[0] || '';
+    body = firstLine + (firstLine ? '\n\n' : '') + url;
+    links = buildEmailLinks(title, body);
+
+    return { links, isTruncated: true };
+  }
+
   // ---------- компонент ----------
 
   class KlassikShare extends HTMLElement {
@@ -96,6 +123,7 @@
       this._onClickBound = this._handleClick.bind(this);
       this._onKeyDownBound = this._handleKeyDown.bind(this);
       this._toastTimer = null;
+      this._isTruncated = false;
     }
 
     connectedCallback() {
@@ -412,6 +440,13 @@
             background: var(--accent-weak, #eaf2fb);
           }
 
+          .ks-truncate-note {
+            font-size: 12px;
+            color: #a0aec0;
+            margin: -4px 0 4px;
+            line-height: 1.4;
+          }
+
           .ks-toast {
             position: fixed;
             left: 50%;
@@ -450,12 +485,18 @@
       const title = this.shareTitle;
       const text = this.shareText;
       const url = this.shareUrl;
+      const { links: emailLinks, isTruncated } = getSafeEmailLinks(title, text, url);
+      this._isTruncated = isTruncated;
+
       const body = text + (text ? '\n\n' : '') + url;
-      const emailLinks = buildEmailLinks(title, body);
 
       // Кнопка "Открыть системное меню" показывается только если API доступно
       const hasNativeShare = typeof navigator.share === 'function';
       const nativeBtnStyle = hasNativeShare ? 'inline-flex' : 'none';
+
+      const truncateNote = isTruncated
+        ? '<p class="ks-truncate-note">Текст карточки слишком длинный для письма. В веб-почту будет вставлена только первая строка. Полный текст скопируйте кнопкой ниже.</p>'
+        : '';
 
       this.shadowRoot.innerHTML = `
         ${this.getStyles()}
@@ -476,6 +517,8 @@
                     data-ks-action="copy_text">
               📋 Скопировать текст и ссылку
             </button>
+
+            ${truncateNote}
 
             <div class="ks-label">Отправить через веб-почту:</div>
             <div class="ks-mail-grid">
