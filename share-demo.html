@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Демо: share.js — общий компонент «Поделиться» | Классик</title>
+<meta name="description" content="Живая демонстрация общей библиотеки share.js проекта «Классик».">
+<meta name="theme-color" content="#16263f">
+<link rel="icon" type="image/svg+xml" href="https://prog815.github.io/common-menu/favicon.svg?v=1.0.0">
+<style>
+  :root{
+    --bg:#e8f0f7; --panel:#ffffff; --text:#16263f; --muted:#5b6e7d;
+    --line:#c5d7e5; --line-strong:#a8bfd4;
+    --accent:#1e3a8a; --accent-weak:#eaf2fb;
+    --mark:#fff3a3; --danger:#b42318;
+    --shadow:0 1px 3px rgba(0,0,0,.05),0 4px 12px rgba(0,0,0,.05);
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.5;
+    -webkit-text-size-adjust:100%;
+  }
+  a{color:var(--accent)}
+  .wrap{max-width:900px;margin:0 auto;padding:0 16px}
+
+  .hero{padding:24px 0 12px}
+  .hero h1{margin:0 0 6px;font-size:28px;letter-spacing:.2px}
+  .hero .ver{
+    display:inline-block; font-family:var(--mono); font-size:12px;
+    background:var(--accent-weak); color:var(--accent);
+    padding:2px 8px; border-radius:999px; margin-left:6px; vertical-align:middle;
+  }
+  .hero p{margin:0; color:var(--muted); font-size:15px; max-width:740px}
+  .hero p b{color:var(--text); font-weight:600}
+
+  .notice{
+    margin:14px 0 4px; padding:10px 14px; border:1px solid var(--line-strong);
+    border-left:5px solid var(--accent); border-radius:10px; background:var(--panel);
+    color:var(--text); font-size:13.5px; box-shadow:var(--shadow);
+  }
+  .notice b{font-weight:600}
+
+  section{margin:20px 0}
+  section h2{
+    margin:0 0 10px; font-size:19px; color:var(--text);
+    padding-bottom:6px; border-bottom:1px solid var(--line);
+  }
+  section p.lead{margin:0 0 12px; color:var(--muted); font-size:14px}
+
+  pre{
+    margin:0; padding:12px 14px; background:#0f172a; color:#e2e8f0;
+    border-radius:10px; overflow-x:auto; font-size:13px; line-height:1.5;
+    font-family:var(--mono); box-shadow:var(--shadow);
+  }
+  code.inline{
+    font-family:var(--mono); font-size:.92em;
+    background:var(--accent-weak); color:var(--accent);
+    padding:1px 5px; border-radius:4px;
+  }
+
+  .examples{display:flex; flex-direction:column; gap:12px}
+  .example{
+    background:var(--panel); border:1px solid var(--line);
+    border-left:5px solid var(--accent);
+    border-radius:var(--radius); padding:14px 16px;
+    box-shadow:var(--shadow);
+  }
+  .example h3{
+    margin:0 0 4px; font-size:15px; color:var(--text);
+  }
+  .example .meta{
+    margin:0 0 12px; font-size:12.5px; color:var(--muted);
+    font-family:var(--mono);
+  }
+  .example .row{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+  }
+  .example .row .desc{
+    flex:1 1 260px; font-size:13px; color:var(--muted);
+  }
+
+  .btn{
+    border:1px dashed var(--line-strong); background:#f7fafc; color:var(--muted);
+    border-radius:8px; padding:8px 14px; cursor:pointer;
+    font:inherit; font-size:13.5px; white-space:nowrap;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .btn:hover{
+    border-color:var(--accent); color:var(--accent); background:var(--accent-weak);
+  }
+
+  .log{
+    margin-top:10px; padding:12px 14px; min-height:80px;
+    background:#0f172a; color:#a5b4c8; border-radius:10px;
+    font-family:var(--mono); font-size:12.5px; line-height:1.55;
+    white-space:pre-wrap; word-break:break-word;
+    max-height:220px; overflow-y:auto;
+  }
+  .log .line{display:block}
+  .log .line .method{color:#7dd3fc}
+  .log .line .catalog{color:#fbbf24}
+
+  footer{
+    margin-top:32px; padding:20px 0 30px;
+    border-top:1px solid var(--line); color:var(--muted); font-size:13px;
+  }
+  footer a{color:var(--accent)}
+
+  @media (max-width:640px){
+    .hero h1{font-size:22px}
+    pre{font-size:12px}
+  }
+</style>
+<script src="https://prog815.github.io/common-menu/menu.js?v=3.0.0"></script>
+<script src="https://prog815.github.io/common-menu/share.js?v=1.0.0"></script>
+</head>
+<body>
+<common-projects-menu></common-projects-menu>
+
+<div class="wrap hero">
+  <h1>Демо: <code style="font-family:var(--mono);font-size:.9em">share.js</code><span class="ver">v1.0.0</span></h1>
+  <p>Живая демонстрация общей библиотеки «Поделиться» проекта «Классик».
+     Один и тот же компонент <code class="inline">&lt;klassik-share&gt;</code> используется на всех
+     страницах справочников — здесь он показан в разных конфигурациях.</p>
+
+  <div class="notice">
+    <b>Это техническая демонстрация для разработчиков.</b>
+    Пользовательские описания — в README проекта и в каждом справочнике.
+    Ниже — четыре живых примера и журнал событий: нажмите кнопку и посмотрите,
+    какое событие отправится в аналитику.
+  </div>
+</div>
+
+<div class="wrap">
+
+  <section>
+    <h2>Как подключить</h2>
+    <p class="lead">Три строки в <code class="inline">&lt;head&gt;</code> — и компонент доступен на странице.</p>
+<pre>&lt;script src="https://prog815.github.io/common-menu/share.js?v=1.0.0"&gt;&lt;/script&gt;
+
+&lt;klassik-share
+  catalog="okso"
+  title="ОКСО: 1.05.01.01 — Математика"
+  text="1.05.01.01; Математика"
+  url="https://prog815.github.io/okso/?code=1.05.01.01"&gt;
+  &lt;button class="btn"&gt;📤 Поделиться&lt;/button&gt;
+&lt;/klassik-share&gt;</pre>
+  </section>
+
+  <section>
+    <h2>Живые примеры</h2>
+    <p class="lead">Ниже — четыре карточки. Каждая — своя конфигурация компонента.
+       После нажатия событие попадёт в журнал внизу страницы.</p>
+
+    <div class="examples">
+
+      <!-- Пример 1: ОКСО, зелёная палитра наследуется из --accent -->
+      <div class="example" style="--accent:#4e9450; --accent-weak:#e3f1e7; border-left-color:#4e9450">
+        <h3>1. ОКСО — карточка с deep-link</h3>
+        <p class="meta">catalog="okso" · зелёная палитра через --accent</p>
+        <div class="row">
+          <div class="desc">Код с точками, полный набор полей.
+            Кнопка наследует акцентный цвет страницы-каталога.</div>
+          <klassik-share
+            catalog="okso"
+            title="ОКСО: 1.05.01.01 — Математика"
+            text="1.05.01.01; Математика"
+            url="https://prog815.github.io/okso/?code=1.05.01.01">
+            <button class="btn">📤 Поделиться</button>
+          </klassik-share>
+        </div>
+      </div>
+
+      <!-- Пример 2: ОКВ, длинный текст -->
+      <div class="example" style="--accent:#1e3a8a; --accent-weak:#eaf2fb; border-left-color:#1e3a8a">
+        <h3>2. ОКВ — длинный текст</h3>
+        <p class="meta">catalog="okv" · несколько строк в text</p>
+        <div class="row">
+          <div class="desc">Проверяем вёрстку модалки, когда текста много:
+            название, дополнительные поля, ссылка.</div>
+          <klassik-share
+            catalog="okv"
+            title="ОКВ: 643 — РОССИЯ (РОССИЙСКАЯ ФЕДЕРАЦИЯ)"
+            text="643; РОССИЯ (РОССИЙСКАЯ ФЕДЕРАЦИЯ)&#10;Альфа-2: RU&#10;Альфа-3: RUS&#10;Цифровой код: 643"
+            url="https://prog815.github.io/okv/?code=643">
+            <button class="btn">📤 Поделиться</button>
+          </klassik-share>
+        </div>
+      </div>
+
+      <!-- Пример 3: без catalog — вычисляется из URL -->
+      <div class="example">
+        <h3>3. Без catalog — вычисляется из URL</h3>
+        <p class="meta">catalog не задан → detectCatalog() вернёт "other" на этой странице</p>
+        <div class="row">
+          <div class="desc">Если атрибут не задан, компонент попытается определить
+            справочник по <code class="inline">location.pathname</code> — так же,
+            как это делает <code class="inline">menu.js</code> для GA4.</div>
+          <klassik-share
+            title="Тестовая карточка"
+            text="000; Тестовая запись"
+            url="https://prog815.github.io/common-menu/share-demo.html">
+            <button class="btn">📤 Поделиться</button>
+          </klassik-share>
+        </div>
+      </div>
+
+      <!-- Пример 4: свой стиль кнопки -->
+      <div class="example">
+        <h3>4. Своя кнопка — слот гибкий</h3>
+        <p class="meta">Внутрь можно положить любой &lt;button&gt;, &lt;a&gt; или role="button"</p>
+        <div class="row">
+          <div class="desc">Компонент не навязывает вид кнопки: заверните свою —
+            стилизуйте под дизайн конкретного справочника.</div>
+          <klassik-share
+            catalog="oksm"
+            title="ОКСМ: 643 — РОССИЯ"
+            text="643; РОССИЯ"
+            url="https://prog815.github.io/oksm/?code=643">
+            <button class="btn" style="background:var(--accent);color:#fff;border-style:solid;border-color:var(--accent)">
+              Отправить коллегам
+            </button>
+          </klassik-share>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Журнал событий</h2>
+    <p class="lead">Сюда попадают все события <code class="inline">klassik-share</code>,
+       которые компонент отправляет в аналитику. В проде такие события видит Метрика и GA4;
+       здесь — просто печатаем в журнал для наглядности.</p>
+    <div class="log" id="eventLog">Журнал пуст. Нажмите любую кнопку «Поделиться» выше.</div>
+  </section>
+
+  <section>
+    <h2>Что важно знать</h2>
+    <ul style="margin:0 0 0 18px;padding:0;color:var(--muted);font-size:14px;line-height:1.7">
+      <li>Мессенджеры (Telegram, WhatsApp, VK) в модалке <b>не</b> показываются — осознанно.
+          Только веб-почта и копирование.</li>
+      <li>Если <code class="inline">navigator.share</code> доступен — сначала пробуем системное меню.
+          При отмене пользователем (AbortError) по умолчанию откроется модалка;
+          атрибут <code class="inline">fallback-on-abort="false"</code> отключает это поведение.</li>
+      <li>Аналитика: событие <code class="inline">share</code> c параметрами
+          <code class="inline">catalog</code> и <code class="inline">method</code>
+          (<code class="inline">native · email · copy_text · copy_url</code>);
+          для веб-почт дополнительно уходит <code class="inline">email_provider</code>.</li>
+      <li>Счётчики Метрики и GA4 компонент <b>не грузит</b> — это делает
+          <code class="inline">menu.js</code>. Компонент только шлёт события.</li>
+      <li>Кнопки и поля в модалке наследуют <code class="inline">--accent</code> страницы —
+          поэтому на ОКСО кнопка зелёная, на ОКПД2 будет синей, и т.д.</li>
+    </ul>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    Демо-страница компонента <code class="inline">share.js</code> v1.0.0 ·
+    общие компоненты проекта «Классик» ·
+    <a href="https://prog815.github.io/common-menu/">О компонентах</a> ·
+    <a href="https://vk.com/klassik_rf">ВК-сообщество</a>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  var log = document.getElementById('eventLog');
+  var count = 0;
+
+  function append(detail) {
+    count++;
+    var time = new Date().toLocaleTimeString('ru-RU');
+    var line = document.createElement('span');
+    line.className = 'line';
+    var provider = detail.email_provider
+      ? ' · provider=' + detail.email_provider : '';
+    line.innerHTML = '[' + time + '] #' + count +
+      ' · method=<span class="method">' + detail.method + '</span>' +
+      ' · catalog=<span class="catalog">' + detail.catalog + '</span>' +
+      provider;
+    if (count === 1) log.textContent = '';
+    log.insertBefore(line, log.firstChild);
+  }
+
+  document.addEventListener('klassik-share', function (e) {
+    if (e.detail) append(e.detail);
+  });
+})();
+</script>
+</body>
+</html>
